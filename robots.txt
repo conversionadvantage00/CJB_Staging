@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cjbattorneys.co.za/sitemap.xml

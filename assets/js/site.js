@@ -324,12 +324,13 @@ function seg(a,k){return a<=1?k[0]*a:a<=2?k[0]+k[1]*(a-1):k[0]+k[1]+k[2]*(a-2)}
 function layout(){
   const w=cards[0].offsetWidth;
   cards.forEach((c,i)=>{const d=i-pos,a=Math.abs(d),s=Math.sign(d)||1;
-    const x=s*w*seg(a,[.7,.48,.42]);
+    /* (2026-11-17) the first step eases out on a sine, so the outgoing and incoming portraits are already side by side when they swap depth: no pop at the crossover */
+    const x=s*w*(a<=1?.7*Math.sin(a*Math.PI/2):seg(a,[.7,.48,.42]));
     const sc=a<=1?1-.16*a:a<=2?.84-.14*(a-1):.7;
     const op=a<=1?1:a<=2?1-.25*(a-1):Math.max(0,.75*(1-(a-2)));
     c.style.transform='translate(-50%,-50%) translateX('+x+'px) scale('+sc+')';
     c.style.filter='grayscale('+Math.min(1,a*1.6)+')';
-    c.style.opacity=op;c.style.zIndex=100-Math.round(a*10);
+    c.style.opacity=op;c.style.zIndex=1000-Math.round(a*100);
     c.classList.toggle('on',a<.5);c.setAttribute('aria-current',a<.5?'true':'false');
   });
   const k=Math.round(pos);if(k!==shown){shown=k;show(k)}
@@ -411,7 +412,7 @@ if(!reduce){
 
 /* ## reviewed 2026-10-14: navigation gains a solid editorial state after the cinematic entrance */
 const nav=$('#nav'),barm=$('#barm');let lastY=0;
-function navState(){const y=scrollY;nav.classList.toggle('hide',y>lastY&&y>420&&!document.body.classList.contains('menu-open'));nav.classList.toggle('solid',!isHome||y>(window.ladyEnd||innerHeight*5)-innerHeight*.6);lastY=y;barm&&barm.classList.toggle('show',y>innerHeight*.55);}
+function navState(){const y=scrollY;nav.classList.toggle('hide',y>lastY&&y>420&&!document.body.classList.contains('menu-open'));nav.classList.toggle('scrolled',y>40);nav.classList.toggle('solid',!isHome||y>(window.ladyEnd||innerHeight*5)-innerHeight*.6);lastY=y;barm&&barm.classList.toggle('show',y>innerHeight*.55);}
 addEventListener('scroll',navState,{passive:true});navState();
 
 /* mobile menu (circle reveal) */
@@ -484,7 +485,7 @@ if(modal){
     const s=SERVICES[k],f=$('#mform');
     f.reset();f.classList.remove('sent');$$('input',f).forEach(x=>{x.classList.remove('err');x.removeAttribute('aria-invalid')});
     $('#mimg').src=s.p;$('#mimg').alt=s.t+' (legal services)';
-    $('#m-title').textContent=s.t;$('#mdesc').textContent=s.d;$('#mchip').textContent='Enquiry: '+s.t;
+    $('#m-title').textContent=s.t;$('#mdesc').textContent=s.d;$('#mchip').innerHTML='Enquire about <em>'+s.t+'</em>';
     $('#msubject').value=subj(s);
   }
   const insetFor=(el,p)=>{const c=el.getBoundingClientRect();return `inset(${c.top-p.top}px ${p.right-c.right}px ${p.bottom-c.bottom}px ${c.left-p.left}px round 20px)`;};
